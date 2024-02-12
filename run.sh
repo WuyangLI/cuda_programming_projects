@@ -1,1 +1,1 @@
-./nppFilters ./data/Emma_Lady_Hamilton_by_George_Romney.pgm canny ./data/Emma_Lady_Hamilton_by_George_Romney_test.bmp 
+./nppFilters ./data/Emma_Lady_Hamilton_by_George_Romney_rbg.png gauss ./data/guass_test.png
