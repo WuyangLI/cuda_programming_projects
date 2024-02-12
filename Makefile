@@ -330,13 +330,13 @@ build: applyBilateralGaussBorder
 
 check.deps:
 ifeq ($(SAMPLE_ENABLED),0)
-	@echo "Sample will be waived due to the above missing dependencies"
+    @echo "Sample will be waived due to the above missing dependencies"
 else
-	@echo "Sample is ready - all dependencies have been met"
+    @echo "Sample is ready - all dependencies have been met"
 endif
 
 main.o:src/main.cpp
-	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -std=c++17 -o $@ -c $<
+    $(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -std=c++17 -o $@ -c $<
 
 applyBilateralGaussBorder: main.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
