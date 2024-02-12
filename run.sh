@@ -1,1 +1,1 @@
-./nppFilters ./data/Emma_Lady_Hamilton_by_George_Romney_rbg.png gauss ./data/guass_test.png
+./applyBilateralGaussBorder -i ./data/Emma_Lady_Hamilton_by_George_Romney_rbg.png -o ./data/bilateral_gauss_filtered_output.png

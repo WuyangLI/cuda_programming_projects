@@ -69,31 +69,31 @@ namespace npp
 
         if (FreeImage_FIFSupportsReading(eFormat))
         {
-            pBitmap = FreeImage_Load(eFormat, rFileName.c_str());
+            pBitmap = FreeImage_Load(eFormat, rFileName.c_str(), PNG_DEFAULT);
         }
 
         NPP_ASSERT(pBitmap != 0);
         // make sure this is an 8-bit single channel image
         // NPP_ASSERT(FreeImage_GetColorType(pBitmap) == FIC_MINISBLACK);
         // NPP_ASSERT(FreeImage_GetBPP(pBitmap) == 8);
-        printf("FreeImage_GetBPP(pBitmap) %d \n", FreeImage_GetBPP(pBitmap));
         FIBITMAP *convertedBitmap = FreeImage_ConvertTo24Bits(pBitmap);
         FreeImage_Unload(pBitmap); // Unload the original bitmap
 
         // create an ImageCPU to receive the loaded image data
-        ImageCPU_8u_C3 oImage(FreeImage_GetWidth(convertedBitmap), FreeImage_GetHeight(convertedBitmap));
+        int width = FreeImage_GetWidth(convertedBitmap);
+        int height = FreeImage_GetHeight(convertedBitmap);
+        ImageCPU_8u_C3 oImage(width, height);
 
         // Copy the FreeImage data into the new ImageCPU
         unsigned int nSrcPitch = FreeImage_GetPitch(convertedBitmap);
-        const Npp8u *pSrcLine = FreeImage_GetBits(convertedBitmap) + nSrcPitch * (FreeImage_GetHeight(convertedBitmap) - 1);
+        const Npp8u *pSrcLine = FreeImage_GetBits(convertedBitmap) + nSrcPitch *(height - 1);
         Npp8u *pDstLine = oImage.data();
         unsigned int nDstPitch = oImage.pitch();
 
-        for (size_t iLine = 0; iLine < oImage.height(); ++iLine)
+        for (int y = 0; y < height; ++y, pDstLine += oImage.pitch())
         {
-            memcpy(pDstLine, pSrcLine, oImage.width() * 3 * sizeof(Npp8u));
-            pSrcLine -= nSrcPitch;
-            pDstLine += nDstPitch;
+            // sizeof(Npp8u) returns 1
+            memcpy(pDstLine, pSrcLine - y * width * 3, width * 3);
         }
 
         // swap the user given image with our result image, effecively
@@ -106,29 +106,27 @@ namespace npp
     saveImage(const std::string &rFileName, const ImageCPU_8u_C3 &rImage)
     {
         // create the result image storage using FreeImage so we can easily
-        // save
-        FIBITMAP *pResultBitmap = FreeImage_AllocateT(FIT_RGB16, rImage.width(), rImage.height());
+        FIBITMAP *pResultBitmap = FreeImage_Allocate(rImage.width(), rImage.height(), 24);
         // FreeImage_Allocate(rImage.width(), rImage.height(), 24 /* bits per pixel */);
         NPP_ASSERT_NOT_NULL(pResultBitmap);
         unsigned int nDstPitch   = FreeImage_GetPitch(pResultBitmap);
         Npp8u *pDstLine = FreeImage_GetBits(pResultBitmap) + nDstPitch * (rImage.height()-1);
-        const Npp8u *pSrcLine = rImage.data();
         unsigned int nSrcPitch = rImage.pitch();
+        const Npp8u *pSrcLine = rImage.data() ;
 
-        for (size_t iLine = 0; iLine < rImage.height(); ++iLine)
+        for (int y = 0; y < rImage.height(); ++y)
         {
-            memcpy(pDstLine, pSrcLine, rImage.width() * 3 * sizeof(Npp8u));
-            pSrcLine += nSrcPitch;
-            pDstLine -= nDstPitch;
+            BYTE *pDstLine = FreeImage_GetScanLine(pResultBitmap, rImage.height() - 1 - y);
+            memcpy(pDstLine, pSrcLine + y * nSrcPitch, rImage.width() * 3);
         }
 
         // now save the result image to PNG format
         bool bSuccess;
-        bSuccess = FreeImage_Save(FIF_PNG, pResultBitmap, rFileName.c_str(), 0) == TRUE;
+        bSuccess = FreeImage_Save(FIF_PNG, pResultBitmap, rFileName.c_str(), PNG_DEFAULT) == TRUE;
         NPP_ASSERT_MSG(bSuccess, "Failed to save result image.");
     }
 
-    // Load a gray-scale image from disk.
+    // Load a png RGB image from disk.
     void
     loadImage(const std::string &rFileName, ImageNPP_8u_C3 &rImage)
     {

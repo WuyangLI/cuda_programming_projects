@@ -10,6 +10,7 @@
 
 #include <cuda_runtime.h>
 #include <FreeImage.h>
+#include <cmath>
 // #include <npp.h>
 
 #include <helper_cuda.h>
@@ -35,151 +36,41 @@ bool printfNPPinfo(int argc, char *argv[])
     return bVal;
 }
 
-/*
-void cannyFilter(const std::string &filePath, const std::string &outputFile)
+void applyBilateralGaussBorder(const std::string &inputFile, const std::string &outputFile)
 {
     try
     {
-        std::cout << "Processing of " << filePath << " started." << std::endl;
-        npp::ImageCPU_8u_C1 hostSrc;
-        npp::loadImage(filePath, hostSrc);
-        npp::ImageNPP_8u_C1 deviceSrc(hostSrc);
-        const NppiSize srcSize = {(int)deviceSrc.width(), (int)deviceSrc.height()};
-        const NppiPoint srcOffset = {0, 0};
-
-        const NppiSize filterROI = {(int)deviceSrc.width(), (int)deviceSrc.height()};
-        npp::ImageNPP_8u_C1 deviceDst(filterROI.width, filterROI.height);
-
-        const Npp16s lowThreshold = 72;
-        const Npp16s highThreshold = 256;
-
-        int bufferSize = 0;
-        Npp8u *scratchBufferNPP = 0;
-        NPP_CHECK_NPP(nppiFilterCannyBorderGetBufferSize(filterROI, &bufferSize));
-        cudaMalloc((void **)&scratchBufferNPP, bufferSize);
-
-        if ((bufferSize > 0) && (scratchBufferNPP != 0))
-        {
-            NPP_CHECK_NPP(nppiFilterCannyBorder_8u_C1R(deviceSrc.data(), deviceSrc.pitch(), srcSize, srcOffset,
-                                                       deviceDst.data(), deviceDst.pitch(), filterROI,
-                                                       NppiDifferentialKernel::NPP_FILTER_SOBEL, NppiMaskSize::NPP_MASK_SIZE_3_X_3,
-                                                       lowThreshold, highThreshold, nppiNormL2, NPP_BORDER_REPLICATE,
-                                                       scratchBufferNPP));
-        }
-
-        cudaFree(scratchBufferNPP);
-
-        npp::ImageCPU_8u_C1 hostDst(deviceDst.size());
-        deviceDst.copyTo(hostDst.data(), hostDst.pitch());
-        saveImage(outputFile, hostDst);
-        std::cout << "Processing of " << filePath << " ended. Result saved to: " << outputFile << std::endl;
-
-        nppiFree(deviceSrc.data());
-        nppiFree(deviceDst.data());
-        nppiFree(hostSrc.data());
-        nppiFree(hostDst.data());
-    }
-    catch (npp::Exception &rException)
-    {
-        std::cerr << "Program error! The following exception occurred: \n";
-        std::cerr << rException << std::endl;
-        std::cerr << "Aborting." << std::endl;
-
-        exit(EXIT_FAILURE);
-    }
-    catch (...)
-    {
-        std::cerr << "Program error! An unknow type of exception occurred. \n";
-        std::cerr << "Aborting." << std::endl;
-
-        exit(EXIT_FAILURE);
-    }
-}
-
-void sobelFilter(const std::string &filePath, const std::string &outputFile)
-{
-    try
-    {
-        std::cout << "Processing of " << filePath << " started." << std::endl;
-        npp::ImageCPU_8u_C1 hostSrc;
-        npp::loadImage(filePath, hostSrc);
-        npp::ImageNPP_8u_C1 deviceSrc(hostSrc);
-        const NppiSize srcSize = {(int)deviceSrc.width(), (int)deviceSrc.height()};
-        const NppiPoint srcOffset = {0, 0};
-
-        const NppiSize filterROI = {(int)deviceSrc.width(), (int)deviceSrc.height()};
-        npp::ImageNPP_8u_C1 deviceDst(filterROI.width, filterROI.height);
-
-        NPP_CHECK_NPP(nppiFilterSobelHorizBorder_8u_C1R(deviceSrc.data(), deviceSrc.pitch(), srcSize, srcOffset,
-                                                        deviceDst.data(), deviceDst.pitch(), filterROI,
-                                                        NppiBorderType::NPP_BORDER_REPLICATE));
-
-        npp::ImageCPU_8u_C1 hostDst(deviceDst.size());
-        deviceDst.copyTo(hostDst.data(), hostDst.pitch());
-        saveImage(outputFile, hostDst);
-        std::cout << "Processing of " << filePath << " ended. Result saved to: " << outputFile << std::endl;
-
-        nppiFree(deviceSrc.data());
-        nppiFree(deviceDst.data());
-    }
-    catch (npp::Exception &rException)
-    {
-        std::cerr << "Program error! The following exception occurred: \n";
-        std::cerr << rException << std::endl;
-        std::cerr << "Aborting." << std::endl;
-
-        exit(EXIT_FAILURE);
-    }
-    catch (...)
-    {
-        std::cerr << "Program error! An unknow type of exception occurred. \n";
-        std::cerr << "Aborting." << std::endl;
-
-        exit(EXIT_FAILURE);
-    }
-}
-*/
-void gaussFilter(const std::string &filePath, const std::string &outputFile)
-{
-    try
-    {
-        std::cout << "Processing of " << filePath << " started." << std::endl;
+        printf("Starting to process %s \n", inputFile.c_str());
         npp::ImageCPU_8u_C3 hostSrc;
-        npp::loadImage(filePath, hostSrc);
+        npp::loadImage(inputFile, hostSrc);
+        printf("Loaded image from path \n");
         npp::ImageNPP_8u_C3 deviceSrc(hostSrc);
         const NppiSize srcSize = {(int)deviceSrc.width(), (int)deviceSrc.height()};
         const NppiPoint srcOffset = {0, 0};
 
-        const NppiSize filterROI = {(int)deviceSrc.width(), (int)deviceSrc.height()};
-        npp::ImageNPP_8u_C3 deviceBlurred(filterROI.width, filterROI.height);
-        // npp::ImageNPP_8u_C3 deviceEdges(filterROI.width, filterROI.height);
+        const NppiSize filterROI = {(int)deviceSrc.width(), (int)deviceSrc.height() - 10};
         npp::ImageNPP_8u_C3 deviceDst(filterROI.width, filterROI.height);
+        printf("created deviceDst \n");
 
-        /*
-        int edge_blur_val = 9;
-        // const NppiSize blurSize = {edge_blur_val, edge_blur_val};
-        // const NppiSize roiSize = {(int)deviceSrc.width() - edge_blur_val + 1, (int)deviceSrc.height() - edge_blur_val + 1};
-        NPP_CHECK_NPP(nppiFilterGauss_8u_C3R(deviceSrc.data(), deviceSrc.pitch(), deviceBlurred.data(), deviceBlurred.pitch(), filterROI, NppiMaskSize::NPP_MASK_SIZE_9_X_9));
-
-        /*
         // Border
-        NPP_CHECK_NPP(nppiFilterGaussBorder_8u_C3R(deviceBlurred.data(), deviceBlurred.pitch(), srcSize, srcOffset,
-                                                   deviceEdges.data(), deviceEdges.pitch(), filterROI,
-                                                   NppiMaskSize::NPP_MASK_SIZE_9_X_9, NppiBorderType::NPP_BORDER_REPLICATE));
-        */
+        NPP_CHECK_NPP(nppiFilterBilateralGaussBorder_8u_C3R(deviceSrc.data(), deviceSrc.pitch(), srcSize, srcOffset,
+                                                            deviceDst.data(), deviceDst.pitch(), filterROI,
+                                                            30, 150, 1000.0, 1000.0, NppiBorderType::NPP_BORDER_REPLICATE));
+        printf("Applied with nppiFilterBilateralGaussBorder \n");
 
-        // combine boarder ....
-        // NPP_CHECK_NPP(nppiAnd_8u_C1R(deviceEdges.data(), deviceEdges.pitch(), deviceBlurred.data(), deviceBlurred.pitch(), deviceDst.data(), deviceDst.pitch(), filterROI));
-
-        npp::ImageCPU_8u_C3 hostDst(deviceSrc.size());
-        deviceSrc.copyTo(hostDst.data(), hostDst.pitch());
+        npp::ImageCPU_8u_C3 hostDst(deviceDst.size());
+        deviceDst.copyTo(hostDst.data(), hostDst.pitch());
+        printf("copied to hostDst \n");
         saveImage(outputFile, hostDst);
-        std::cout << "Processing of " << filePath << " ended. Result saved to: " << outputFile << std::endl;
+        printf("Finished processing %s, writting to %s \n", inputFile.c_str(), outputFile.c_str());
 
         nppiFree(deviceSrc.data());
         nppiFree(deviceDst.data());
         nppiFree(hostSrc.data());
         nppiFree(hostDst.data());
+
+        cudaDeviceSynchronize();
+        cudaDeviceReset();
     }
     catch (npp::Exception &rException)
     {
@@ -198,44 +89,26 @@ void gaussFilter(const std::string &filePath, const std::string &outputFile)
     }
 }
 
-std::vector<std::string> splitString(const std::string &data, char separator)
+std::tuple<std::string, std::string> parseCommandLineArguments(int argc, char *argv[])
 {
-    std::vector<std::string> strings;
-    std::istringstream f(data);
-    std::string s;
-    while (getline(f, s, separator))
+    std::string inputPath;
+    std::string outputPath;
+    for (int i = 1; i < argc; i++)
     {
+        std::string option(argv[i]);
+        i++;
+        std::string value(argv[i]);
+        if (option.compare("-i") == 0)
+        {
+            inputPath = value;
+        }
+        else if (option.compare("-o") == 0)
+        {
+            outputPath = value;
+        }
+    }
 
-        strings.push_back(s);
-    }
-    return strings;
-}
-
-void applyFilter(const std::string &filterType, const std::string &filePath, const std::string &outputFile)
-{
-    /*
-    if (filterType == "canny")
-    {
-        std::cout << "Selected Canny Edge Detection Filter." << std::endl;
-        cannyFilter(filePath, outputFile);
-    }
-    else if (filterType == "sobel")
-    {
-        std::cout << "Selected Sobel Edge Detection Filter." << std::endl;
-        sobelFilter(filePath, outputFile);
-    }
-    */
-    if (filterType == "gauss")
-    {
-        std::cout << "Selected Gauss Smooth Filter." << std::endl;
-        gaussFilter(filePath, outputFile);
-    }
-    else
-    {
-        std::cout << "Filter type isn't supported!" << std::endl;
-    }
-    cudaDeviceSynchronize();
-    cudaDeviceReset();
+    return {inputPath, outputPath};
 }
 
 int main(int argc, char *argv[])
@@ -249,72 +122,9 @@ int main(int argc, char *argv[])
 
     findCudaDevice(argc, (const char **)argv);
 
-    char *inputData;
-    if (argc >= 2)
-    {
-        inputData = argv[1];
-        if (!inputData)
-        {
-            std::cerr << "Cannot read the input data!" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-    else
-    {
-        std::cerr << "Input folder or image missed!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    auto [inputPath, outputPath] = parseCommandLineArguments(argc, argv);
 
-    char *filterData;
-    if (argc >= 3)
-    {
-        filterData = argv[2];
-        if (!inputData)
-        {
-            std::cerr << "Cannot read the filter type!" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-    else
-    {
-        std::cerr << "Filter type is missed!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    applyBilateralGaussBorder(inputPath, outputPath);
 
-    char *outputData;
-    if (argc >= 4)
-    {
-        outputData = argv[3];
-        if (!inputData)
-        {
-            std::cerr << "Cannot read the filter type!" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-    else
-    {
-        std::cerr << "Filter type is missed!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    std::string filterType{filterData};
-    std::string output{outputData};
-    if (std::filesystem::is_directory(output))
-    {
-        std::filesystem::create_directory(output);
-    }
-
-    std::string inputValue{inputData};
-    if (!std::filesystem::is_directory(inputValue))
-    {
-        std::string outputFile{output};
-        if (std::filesystem::is_directory(output))
-        {
-            const std::string fileName = std::filesystem::path(inputValue).filename().string();
-            const auto parts = splitString(fileName, '.');
-            outputFile += "/" + parts.front() + ".png";
-        }
-        applyFilter(filterType, inputValue, outputFile);
-    }
     return 0;
 }
