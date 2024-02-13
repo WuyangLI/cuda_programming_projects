@@ -101,7 +101,7 @@ namespace npp
         oImage.swap(rImage);
     }
 
-    // Save an gray-scale image to disk.
+    // Save a RGB image to disk.
     void
     saveImage(const std::string &rFileName, const ImageCPU_8u_C3 &rImage)
     {
@@ -136,7 +136,7 @@ namespace npp
         rImage.swap(oResult);
     }
 
-    // Save an gray-scale image to disk.
+    // Save a RGB image to disk.
     void
     saveImage(const std::string &rFileName, const ImageNPP_8u_C3 &rImage)
     {
