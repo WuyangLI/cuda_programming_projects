@@ -73,9 +73,6 @@ namespace npp
         }
 
         NPP_ASSERT(pBitmap != 0);
-        // make sure this is an 8-bit single channel image
-        // NPP_ASSERT(FreeImage_GetColorType(pBitmap) == FIC_MINISBLACK);
-        // NPP_ASSERT(FreeImage_GetBPP(pBitmap) == 8);
         FIBITMAP *convertedBitmap = FreeImage_ConvertTo24Bits(pBitmap);
         FreeImage_Unload(pBitmap); // Unload the original bitmap
 
