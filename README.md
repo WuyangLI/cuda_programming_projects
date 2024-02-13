@@ -14,7 +14,10 @@ apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP
 
 ```data/```
 This folder holds all example data in any format. The image is from wikipedia [link](https://upload.wikimedia.org/wikipedia/commons/e/e2/Emma%2C_Lady_Hamilton_by_George_Romney.jpg)
-The original file is a 4 channel jpg image. It's converted to a 3-channel png format image `Emma_Lady_Hamilton_by_George_Romney_rbg.png` and gray-scale pgm format file `data/Emma_Lady_Hamilton_by_George_Romney.pgm`.
+
+The original file is a 4 channel jpg image. 
+
+It's converted to a 3-channel png format image `Emma_Lady_Hamilton_by_George_Romney_rbg.png` and gray-scale pgm format file `data/Emma_Lady_Hamilton_by_George_Romney.pgm`.
 
 ```src/```
 The source contains two files: `main.cpp` and `ImageIO.h`.
