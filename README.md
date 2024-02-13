@@ -5,6 +5,11 @@ apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP
 
 apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP library
 
+<div style="display: flex;">
+    <img src="./data/Emma_Lady_Hamilton_by_George_Romney_rbg.png" alt="Image 1" style="float: center; width: 45%; margin-right: 5%;" />
+    <img src="./data/bilateral_gauss_filtered_output.png" alt="Image 2" style="float: center; width: 45%; margin-right: 5%;" />
+</div>
+
 ## Code Organization
 
 ```bin/```
@@ -32,3 +37,4 @@ make clean build
 ```
 ./run.sh
 ```
+
