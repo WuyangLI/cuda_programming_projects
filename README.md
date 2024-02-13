@@ -1,4 +1,4 @@
-# CUDA at Scale For The Enterprise Course Project - apply Bilateral Gauss Filter
+# Apply Bilateral Gauss Filter with NPP
 apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP library
 
 ## Project Description
