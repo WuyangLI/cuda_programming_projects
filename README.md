@@ -1,9 +1,9 @@
-# CUDAatScaleForTheEnterpriseCourseProjectTemplate
-This is a template for the course project for the CUDA at Scale for the Enterprise
+# CUDA at Scale For The Enterprise Course Project - apply Bilateral Gauss Filter
+apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP library
 
 ## Project Description
 
-Beyond just being a template for course members, this project can be used by non-course members as the general structure for CUDA projects.
+apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP library
 
 ## Code Organization
 
@@ -22,11 +22,13 @@ The source code should be placed here in a hierarchical fashion, as appropriate.
 ```README.md```
 This file should hold the description of the project so that anyone cloning or deciding if they want to clone this repository can understand its purpose to help with their decision.
 
-```INSTALL```
-This file should hold the human-readable set of instructions for installing the code so that it can be executed. If possible it should be organized around different operating systems, so that it can be done by as many people as possible with different constraints.
 
-```Makefile or CMAkeLists.txt or build.sh```
-There should be some rudimentary scripts for building your project's code in an automatic fashion.
+```Makefile```
+```
+make clean build
+```
 
 ```run.sh```
-An optional script used to run your executable code, either with or without command-line arguments.
+```
+./run.sh
+```
