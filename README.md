@@ -12,14 +12,9 @@ apply Bilateral Gauss Filter to an RGB image of a classic oil painting using NPP
 
 ## Code Organization
 
-```bin/```
-This folder should hold all binary/executable code that is built automatically or manually. Executable code should have use the .exe extension or programming language-specific extension.
-
 ```data/```
-This folder should hold all example data in any format. If the original data is rather large or can be brought in via scripts, this can be left blank in the respository, so that it doesn't require major downloads when all that is desired is the code/structure.
-
-```lib/```
-Any libraries that are not installed via the Operating System-specific package manager should be placed here, so that it is easier for inclusion/linking.
+This folder holds all example data in any format. The image is from wikipedia (link)[https://upload.wikimedia.org/wikipedia/commons/e/e2/Emma%2C_Lady_Hamilton_by_George_Romney.jpg]
+The original file is a 4 channel jpg image. It's converted to a 3-channel png image `Emma_Lady_Hamilton_by_George_Romney_rbg.png` and gray-scale pgm file.
 
 ```src/```
 The source code should be placed here in a hierarchical fashion, as appropriate.
