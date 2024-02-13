@@ -11,7 +11,6 @@
 #include <cuda_runtime.h>
 #include <FreeImage.h>
 #include <cmath>
-// #include <npp.h>
 
 #include <helper_cuda.h>
 
